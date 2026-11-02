@@ -118,3 +118,55 @@ header.site{box-shadow:0 1px 0 var(--line),0 8px 30px rgba(31,107,58,.06)}
 @media(max-width:860px){.login-split{grid-template-columns:1fr}.login-art{display:none}}
 
 .map.map-unavailable{display:grid;place-items:center;padding:2rem;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line2);border-radius:var(--radius)}
+
+
+/* Phone-first portal navigation, sign-in links, and map layout */
+.nav-icon{display:none}
+.login-column{width:100%;max-width:400px;display:grid;gap:1rem}
+.portal-access{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1rem;box-shadow:var(--shadow)}
+.portal-access h2{font-size:1rem;margin:0 0 .65rem;color:var(--brand)}
+.portal-access a{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:48px;padding:.65rem .75rem;margin-top:.45rem;border:1px solid var(--line);border-radius:10px;color:var(--text);font-weight:700}
+.portal-access a b{color:var(--brand);white-space:nowrap;font-size:.82rem}
+.portal-access a:hover{border-color:var(--accent);background:var(--panel2)}
+@media(max-width:860px){
+ body.admin,body.client,body.partner{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+ .side{position:fixed;top:auto;right:0;bottom:0;left:0;width:100%;height:calc(68px + env(safe-area-inset-bottom));min-height:68px;padding:.2rem .35rem calc(.2rem + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);z-index:30;flex-direction:row;flex-wrap:nowrap;gap:0;overflow:hidden;background:rgba(255,255,255,.97);backdrop-filter:blur(12px)}
+ .side .brand{display:none}
+ .side nav{display:flex;width:100%;align-items:stretch;flex-wrap:nowrap;gap:.15rem;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+ .side nav::-webkit-scrollbar{display:none}
+ .side nav a{position:relative;flex:1 0 56px;max-width:90px;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.18rem;margin:0;padding:.25rem .15rem;text-align:center;white-space:normal;font-size:.65rem;line-height:1.05}
+ .side nav a .nav-icon{display:block;font-size:1.15rem;line-height:1;color:var(--brand)}
+ .side nav a .nav-label{max-width:100%;font-size:.61rem;line-height:1.05;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .side nav a .pill:not(:empty){position:absolute;top:.1rem;right:.2rem;padding:0 .3rem}
+ .main{margin-left:0;min-height:100vh;min-height:100dvh}
+ .top{padding:.75rem 1rem}
+ #view{padding:1rem}
+ .mapgrid{grid-template-columns:1fr}
+ div.map{height:52svh;min-height:340px}
+ .navbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.55rem}
+ .navbar .brand{grid-column:1}
+ .navbar>.btn{grid-column:2;grid-row:1}
+ .navbar nav{grid-column:1/-1;display:flex;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;overscroll-behavior-x:contain;scrollbar-width:none}
+ .navbar nav::-webkit-scrollbar{display:none}
+ .navbar nav a{flex:0 0 auto}
+ .topbar .wrap{padding-inline:.75rem;font-size:.68rem}
+ .topbar .wrap.row{gap:.2rem .7rem}
+ body.map-page{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
+ body.map-page .main{height:100vh;height:100dvh;display:flex;flex-direction:column}
+ body.map-page .top{height:62px;min-height:62px;flex:0 0 62px;position:relative;z-index:10;padding:.5rem .8rem}
+ body.map-page .top h1{font-size:1rem}
+ body.map-page .who{gap:.4rem;font-size:.7rem}
+ body.map-page .live{display:none}
+ body.map-page #view{height:calc(100vh - 134px - env(safe-area-inset-bottom));height:calc(100dvh - 134px - env(safe-area-inset-bottom));flex:1;min-height:0;padding:0;overflow:hidden}
+ body.map-page .mapgrid{display:block;position:relative;width:100%;height:100%;min-height:0}
+ body.map-page .mapgrid div.map{height:100%;min-height:0;border:0;border-radius:0}
+ body.map-page .mapgrid aside.panel{position:absolute;left:.55rem;right:.55rem;bottom:.55rem;max-height:34%;overflow:auto;z-index:500;padding:.55rem;background:rgba(255,255,255,.92);backdrop-filter:blur(9px)}
+ body.map-page .mapgrid aside.panel h2{margin:.45rem 0;font-size:.9rem}
+ body.map-page .unit{padding:.45rem .55rem;margin-bottom:.35rem}
+ body.map-page .map-note{display:none}
+ .leaflet-top.leaflet-right{top:.35rem;right:.35rem}
+}
+@media(max-width:860px) and (orientation:landscape){
+ body.map-page #view{height:calc(100dvh - 115px - env(safe-area-inset-bottom))}
+ body.map-page .mapgrid aside.panel{max-height:40%}
+}

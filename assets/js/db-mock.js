@@ -159,13 +159,19 @@
     map: function (cv, units, o) {
       o = o || {}; if (!w.L) { cv.classList.add('map-unavailable'); cv.setAttribute('role', 'status'); cv.textContent = 'The live map library did not load. Refresh the page or check your connection.'; return; }
       var M = w.__bamuLmap;
+      var isMini = cv.classList.contains('mini');
       if (!M) {
         var el = document.createElement('div'); el.className = 'map';
-        var map = L.map(el, { zoomControl: true }).setView([-26.05, 28.15], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+        el.setAttribute('role', 'application'); el.setAttribute('aria-label', 'Interactive satellite map');
+        cv.replaceWith(el);
+        var map = L.map(el, { zoomControl: true, scrollWheelZoom: true }).setView([-26.05, 28.15], 13);
+        if (map.attributionControl) map.attributionControl.setPosition('topright');
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri, Vantor, Earthstar Geographics, and the GIS User Community' }).addTo(map);
         M = w.__bamuLmap = { el: el, map: map, mk: {}, tr: {}, fit: false, sel: null, o: {} };
+      } else {
+        cv.replaceWith(M.el);
       }
-      M.o = o; M.el.classList.toggle('mini', cv.classList.contains('mini')); cv.replaceWith(M.el);
+      M.o = o; M.el.classList.toggle('mini', isMini);
       M.map.scrollWheelZoom[cv.classList.contains('mini') ? 'disable' : 'enable']();
       setTimeout(function () { M.map.invalidateSize(); }, 0);
       var seen = {}, bounds = [];
@@ -180,7 +186,7 @@
       });
       Object.keys(M.mk).forEach(function (k) { if (!seen[k]) { M.map.removeLayer(M.mk[k]); delete M.mk[k]; if (M.tr[k]) { M.map.removeLayer(M.tr[k]); delete M.tr[k]; } } });
       if (!M.fit && bounds.length) { M.map.fitBounds(L.latLngBounds(bounds).pad(.35), { maxZoom: 12 }); M.fit = true; }
-      if (o.sel && o.sel !== M.sel && M.mk[o.sel]) { M.sel = o.sel; M.map.panTo(M.mk[o.sel].getLatLng()); }
+      if (o.sel && o.sel !== M.sel && M.mk[o.sel]) { M.sel = o.sel; M.map.flyTo(M.mk[o.sel].getLatLng(), Math.max(M.map.getZoom(), 15), { animate: true, duration: .45 }); }
     },
     mapCanvas: function (cv, units, o) {
       o = o || {}; var dpr = w.devicePixelRatio || 1, W = cv.clientWidth || 800, H = cv.clientHeight || 480;
@@ -217,6 +223,7 @@
   };
 
   /* ---------- Portal shell ---------- */
+  var NAV_ICON = { 'Dashboard':'⌂', 'Vehicles':'▣', 'Live Map':'⌖', 'Trip History':'↻', 'Alerts':'!', 'Billing':'R', 'Settings':'⚙', 'Master Dashboard':'⌂', 'Customers':'♙', 'Trackers':'◉', 'Dispatch Map':'⌖', 'Command Logs':'☷', 'Support Tickets':'?', 'Analytics':'▥', 'Install Jobs':'▣', 'Job Map':'⌖', 'Stock':'▤' };
   var NAV = {
     client: [['index.html', 'Dashboard'], ['vehicles.html', 'Vehicles'], ['map.html', 'Live Map'], ['trip-history.html', 'Trip History'], ['alerts.html', 'Alerts'], ['billing.html', 'Billing'], ['settings.html', 'Settings']],
     admin: [['index.html', 'Master Dashboard'], ['customers.html', 'Customers'], ['trackers.html', 'Trackers'], ['dispatch-map.html', 'Dispatch Map'], ['logs.html', 'Command Logs'], ['support-tickets.html', 'Support Tickets'], ['analytics.html', 'Analytics']],
@@ -232,10 +239,10 @@
   }
   B.page = function (p, file, title, render) {
     document.addEventListener('DOMContentLoaded', function () {
-      document.body.className = p; var app = document.getElementById('app'), u = B.user(p);
+      document.body.className = p + ((file === 'map.html' || file === 'dispatch-map.html') ? ' map-page' : ''); var app = document.getElementById('app'), u = B.user(p);
       if (!u) { if (p !== 'client' && file === 'index.html') return staffLogin(app, p); location.replace(p === 'client' ? '../public-website/login.html' : 'index.html'); return; }
       app.innerHTML = '<aside class="side"><div class="brand"><img class="mark" src="' + IMG + 'logo-mark.png" alt=""><div><b>Bamu Tracker</b><small>' + TAG[p] + '</small></div></div><nav>' +
-        NAV[p].map(function (n) { return '<a href="' + n[0] + '" class="' + (n[0] === file ? 'on' : '') + '">' + n[1] + '<span class="pill" data-pill="' + n[0] + '"></span></a>'; }).join('') +
+        NAV[p].map(function (n) { return '<a href="' + n[0] + '" class="' + (n[0] === file ? 'on' : '') + '"' + (n[0] === file ? ' aria-current="page"' : '') + '><span class="nav-icon" aria-hidden="true">' + (NAV_ICON[n[1]] || '•') + '</span><span class="nav-label">' + n[1] + '</span><span class="pill" data-pill="' + n[0] + '"></span></a>'; }).join('') +
         '</nav></aside><div class="main"><header class="top"><h1>' + title + '</h1><div class="who"><span class="live"><i></i>Live</span><span>' + esc(u.name) + '</span><button class="btn ghost sm" id="out">Sign out</button></div></header><main id="view"></main></div>';
       document.getElementById('out').onclick = function () { B.logout(p); location.href = p === 'client' ? '../public-website/login.html' : 'index.html'; };
       var v = document.getElementById('view');
@@ -254,7 +261,7 @@
   var PUB = [['index.html', 'Home'], ['personal-tracking.html', 'Personal'], ['fleet-management.html', 'Fleet'], ['pricing.html', 'Pricing'], ['fitment-centres.html', 'Fitment Centres'], ['about.html', 'About'], ['contact.html', 'Contact']];
   B.pub = function () {
     var f = location.pathname.split('/').pop() || 'index.html', link = function (n) { return '<a href="' + n[0] + '" class="' + (n[0] === f ? 'on' : '') + '">' + n[1] + '</a>'; };
-    document.getElementById('site-nav').innerHTML = '<div class="topbar"><div class="wrap row between"><span>24/7 Control room: +27 10 555 0100</span><span><a href="contact.html">Become a fitment partner</a> &nbsp;·&nbsp; <a href="login.html">Client login</a></span></div></div><div class="wrap navbar"><a class="brand" href="index.html"><img class="mark" src="' + IMG + 'logo-mark.png" alt=""><b>Bamu Tracker</b></a><nav>' + PUB.map(link).join('') + '</nav><a class="btn sm" href="login.html">Client Login</a></div>';
+    document.getElementById('site-nav').innerHTML = '<div class="topbar"><div class="wrap row between"><span>24/7 Control room: +27 10 555 0100</span><span><a href="contact.html">Become a fitment partner</a> &nbsp;·&nbsp; <a href="../partner-portal/index.html">Partner login</a> &nbsp;·&nbsp; <a href="../admin-portal/index.html">Admin login</a> &nbsp;·&nbsp; <a href="login.html">Client login</a></span></div></div><div class="wrap navbar"><a class="brand" href="index.html"><img class="mark" src="' + IMG + 'logo-mark.png" alt=""><b>Bamu Tracker</b></a><nav>' + PUB.map(link).join('') + '</nav><a class="btn sm" href="login.html">Client Login</a></div>';
     document.querySelectorAll('[data-scene]').forEach(function (e) { if (w.Bamu3D) w.Bamu3D.mount(e, { type: e.dataset.scene, dark: e.hasAttribute('data-dark') }); });
     B.fx();
     document.getElementById('site-foot').innerHTML = '<div class="wrap"><div class="cols"><div><h4>Bamu Tracker</h4><p>Vehicle tracking, recovery and fleet intelligence for South Africa.</p></div><div><h4>Solutions</h4><a href="personal-tracking.html">Personal tracking</a><a href="fleet-management.html">Fleet management</a><a href="pricing.html">Pricing</a></div><div><h4>Company</h4><a href="about.html">About</a><a href="fitment-centres.html">Fitment centres</a><a href="contact.html">Contact</a></div><div><h4>24/7 Control Room</h4><p>+27 10 555 0100<br>support@bamu.co.za</p></div></div><p>\u00a9 2026 Bamu Tracker (Pty) Ltd. Demonstration platform.</p></div>';
