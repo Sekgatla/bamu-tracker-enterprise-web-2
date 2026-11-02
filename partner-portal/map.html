@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Job Map · Bamu Partner Portal</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/partner-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="partner"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const pts=j=>j.map(x=>({id:x.id,plate:x.plate,lat:x.lat,lng:x.lng,status:x.status==='done'?'moving':'idle',immob:false}));
+const svc=x=>x.service.charAt(0).toUpperCase()+x.service.slice(1);
+let sel=null;
+B.page('partner','map.html','Job Map',(v,u)=>{
+ const j=B.db.jobs.filter(x=>x.partner===u.id);if(!j.some(x=>x.id===sel))sel=j[0]&&j[0].id;
+ v.innerHTML='<div class="mapgrid"><canvas class="map"></canvas><aside class="panel">'+(j.map(x=>`<button class="unit ${x.id===sel?'on':''}" data-act="sel" data-id="${x.id}"><b>${esc(x.plate)}</b>${U.badge(x.status)}<small>${svc(x)} · ${esc(x.city)} · ${B.dt(x.when)}</small></button>`).join('')||'<p class="empty">No jobs</p>')+'</aside></div><p class="muted">Green = completed, amber = scheduled / in progress</p>';
+ U.map(v.querySelector('canvas'),pts(j),{sel,onSel:id=>{sel=id;B.refresh()}});
+ U.on(v,{sel:id=>{sel=+id;B.refresh()}});
+});
+</script></body></html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vehicles · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script src="../assets/js/scene3d.js"></script><script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+B.page('client','vehicles.html','My Vehicles',(v,u)=>{
+ const d=B.mine(u);
+ v.innerHTML=(d.length?'<div class="stage garage"></div><div class="spacer"></div>':'')+U.table([['Vehicle',x=>`<b>${esc(x.plate)}</b><br><small>${esc(x.vehicle)}</small>`],['IMEI',x=>`<code>${x.imei}</code>`],['Hardware',x=>esc(x.model)],['Firmware',x=>x.fw],['Battery',x=>x.batt+'%'],['Status',x=>U.status(x)],['Speed',x=>Math.round(x.speed)+' km/h'],['Last seen',x=>B.ago(x.seen)],['Actions',x=>`<button class="btn sm ghost" data-act="ping" data-id="${x.id}">Ping</button> `+(x.immob?`<button class="btn sm" data-act="res" data-id="${x.id}">Restore</button>`:`<button class="btn sm danger" data-act="imm" data-id="${x.id}">Immobilise</button>`)]],d,'No vehicles are assigned to your account yet.');
+ const g=v.querySelector('.garage');if(g&&window.Bamu3D&&!Bamu3D.mount(g,{type:'fleet',key:'garage',dark:1,kinds:d.map(x=>({k:/sprinter|npr|crafter|hino|truck/i.test(x.vehicle)?'truck':'car',s:x.immob?'offline':x.status}))}))g.remove();
+ U.on(v,{
+  ping:id=>{B.cmd(id,'ping',u.name,'client');U.toast('Ping acknowledged by device')},
+  imm:id=>U.modal('Immobilise vehicle',[{t:'note',l:'<b>Engine cut-off is only safe when the vehicle is stationary or stolen.</b> The command is logged in the audit trail.'}],()=>{B.cmd(id,'immobilise',u.name,'client');U.toast('Immobilise command sent')},'Immobilise'),
+  res:id=>{B.cmd(id,'restore',u.name,'client');U.toast('Ignition restored')}
+ });
+});
+</script></body></html>

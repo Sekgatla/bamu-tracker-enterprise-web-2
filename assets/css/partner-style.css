@@ -1,0 +1,4 @@
+/* Partner (fitment installer) portal: isolated stylesheet, teal accent */
+:root{--accent:#0b84a5;--accent-ink:#fff;--bg:#f2f8fa;--bg2:#e6f1f5;--panel2:#e9f5f9;--line:#d5e5ea;--line2:#b9d2da}
+body.partner .top{border-bottom:3px solid var(--accent)}body.partner th{color:#0b6682}
+.login-card{border-top:4px solid var(--accent)}.login-wrap{background:linear-gradient(135deg,#e6f1f5,#f2f8fa)}

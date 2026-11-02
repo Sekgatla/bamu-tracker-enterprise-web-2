@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Tracker Map · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+let sel=null;
+B.page('client','map.html','Live Tracker Map',(v,u)=>{
+ B.sim();const d=B.mine(u);if(!d.some(x=>x.id===sel))sel=d[0]&&d[0].id;
+ v.innerHTML='<div class="mapgrid"><canvas class="map"></canvas><aside class="panel">'+(d.map(x=>`<button class="unit ${x.id===sel?'on':''}" data-act="sel" data-id="${x.id}"><b>${esc(x.plate)}</b>${U.status(x)}<small>${esc(x.vehicle)} · ${Math.round(x.speed)} km/h</small></button>`).join('')||'<p class="empty">No vehicles</p>')+'</aside></div><p class="muted">WGS84 coordinate grid · refreshes every 3 seconds</p>';
+ U.map(v.querySelector('canvas'),d,{sel,onSel:id=>{sel=id;B.refresh()}});
+ U.on(v,{sel:id=>{sel=+id;B.refresh()}});
+});
+</script></body></html>

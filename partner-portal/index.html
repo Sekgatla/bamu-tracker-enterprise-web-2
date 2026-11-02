@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Dashboard · Bamu Partner Portal</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/partner-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="partner"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const pts=j=>j.map(x=>({id:x.id,plate:x.plate,lat:x.lat,lng:x.lng,status:x.status==='done'?'moving':'idle',immob:false}));
+const svc=x=>x.service.charAt(0).toUpperCase()+x.service.slice(1);
+B.page('partner','index.html','Partner Dashboard',(v,u)=>{
+ const j=B.db.jobs.filter(x=>x.partner===u.id),st=B.db.devices.filter(d=>d.partner===u.id&&!d.owner),open=j.filter(x=>x.status!=='done').sort((a,b)=>a.when-b.when);
+ v.innerHTML='<div class="grid4">'+U.stat('Scheduled',j.filter(x=>x.status==='scheduled').length,'upcoming')+U.stat('In progress',j.filter(x=>x.status==='in-progress').length,'on site now')+U.stat('Completed',j.filter(x=>x.status==='done').length,'all time')+U.stat('Stock units',st.length,'ready to fit')+'</div><h2>Job locations</h2><canvas class="map mini"></canvas><h2>Next jobs</h2>'+
+ U.table([['When',x=>B.dt(x.when)],['Customer',x=>esc(x.customer)],['Vehicle',x=>esc(x.plate)],['Service',x=>svc(x)],['City',x=>esc(x.city)],['Status',x=>U.badge(x.status)]],open,'No open jobs.');
+ U.map(v.querySelector('canvas'),pts(open),{});
+});
+</script></body></html>

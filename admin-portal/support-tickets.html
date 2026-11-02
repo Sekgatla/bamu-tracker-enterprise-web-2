@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Support Tickets · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+B.page('admin','support-tickets.html','Support, Panic & Recovery',(v,u)=>{
+ const rank={critical:0,high:1,medium:2,low:3},t=B.db.tickets.slice().sort((a,b)=>(a.status==='resolved')-(b.status==='resolved')||rank[a.priority]-rank[b.priority]||b.ts-a.ts);
+ v.innerHTML=U.table([['Priority',x=>U.badge(x.priority)],['Type',x=>U.badge(x.type)],['Subject',x=>`<b>${esc(x.subject)}</b><br><small>${esc(x.name)} · ${B.ago(x.ts)}</small>`],['Status',x=>U.badge(x.status)],['',x=>`<button class="btn sm ghost" data-act="open" data-id="${x.id}">Open</button>`+(x.dev&&x.status!=='resolved'?` <button class="btn sm danger" data-act="imm" data-id="${x.id}">Immobilise</button>`:'')]],t,'Inbox zero. No tickets.');
+ U.on(v,{
+  open:id=>{const x=B.find('tickets',id);U.modal('#'+x.id+' '+x.subject,[{t:'note',l:'<b>'+esc(x.name)+'</b> &lt;'+esc(x.email)+'&gt;<br>'+esc(x.msg)+x.replies.map(r=>'<span class="thread"><small>'+esc(r.by)+' · '+B.ago(r.ts)+'</small>'+esc(r.msg)+'</span>').join('')},{n:'reply',l:'Reply / internal note',t:'textarea',r:false},{n:'status',l:'Status',t:'select',o:[['open','Open'],['in-progress','In progress'],['resolved','Resolved']],v:x.status}],f=>{const r=f.reply.trim()?x.replies.concat([{by:u.name,msg:f.reply.trim(),ts:Date.now()}]):x.replies;B.upd('tickets',id,{status:f.status,replies:r});U.toast('Ticket updated')},'Update')},
+  imm:id=>{const x=B.find('tickets',id);U.modal('Recovery: engine cut',[{t:'note',l:'Immobilise the unit linked to <b>'+esc(x.subject)+'</b>?'}],()=>{B.cmd(x.dev,'immobilise',u.name,'admin');B.upd('tickets',id,{status:'in-progress'});U.toast('Unit immobilised')},'Immobilise')}
+ });
+});
+</script></body></html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Install Jobs · Bamu Partner Portal</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/partner-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="partner"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const pts=j=>j.map(x=>({id:x.id,plate:x.plate,lat:x.lat,lng:x.lng,status:x.status==='done'?'moving':'idle',immob:false}));
+const svc=x=>x.service.charAt(0).toUpperCase()+x.service.slice(1);
+B.page('partner','jobs.html','Install & Service Jobs',(v,u)=>{
+ const j=B.db.jobs.filter(x=>x.partner===u.id).sort((a,b)=>b.when-a.when),cl=B.db.users.filter(x=>x.role==='client');
+ v.innerHTML='<div class="row between"><p class="muted">'+j.length+' jobs</p><button class="btn" data-act="add">+ New job</button></div><div class="spacer"></div>'+
+ U.table([['When',x=>B.dt(x.when)],['Customer',x=>esc(x.customer)],['Vehicle',x=>`<b>${esc(x.plate)}</b><br><small>${esc(x.vehicle)}</small>`],['Service',x=>svc(x)],['City',x=>esc(x.city)],['Tracker',x=>x.imei?`<code>${x.imei}</code>`:'-'],['Status',x=>U.badge(x.status)],['',x=>x.status==='scheduled'?`<button class="btn sm ghost" data-act="go" data-id="${x.id}">Start</button>`:x.status==='in-progress'?`<button class="btn sm" data-act="done" data-id="${x.id}">Complete</button>`:'']],j,'No jobs yet.');
+ U.on(v,{
+  add:()=>U.modal('New job',[{n:'owner',l:'Customer',t:'select',o:cl.map(c=>[c.id,c.name])},{n:'plate',l:'Number plate'},{n:'vehicle',l:'Vehicle'},{n:'service',l:'Service',t:'select',o:[['install','Install'],['repair','Repair'],['removal','Removal']]},{n:'city',l:'City',t:'select',o:B.CITIES.map(c=>[c[0],c[0]])},{n:'when',l:'Date & time',t:'datetime-local'}],f=>{const c=B.find('users',f.owner),k=B.CITIES.find(x=>x[0]===f.city);B.add('jobs',{partner:u.id,owner:c.id,customer:c.name,plate:f.plate.trim().toUpperCase(),vehicle:f.vehicle.trim(),service:f.service,city:f.city,lat:k[1],lng:k[2],when:new Date(f.when).getTime(),status:'scheduled',imei:null});U.toast('Job scheduled')},'Schedule'),
+  go:id=>{B.upd('jobs',id,{status:'in-progress'});U.toast('Job started')},
+  done:id=>{const j=B.find('jobs',id);if(j.service!=='install'){B.upd('jobs',id,{status:'done'});U.toast('Job completed');return}
+   const s=B.db.devices.filter(d=>d.partner===u.id&&!d.owner);if(!s.length){U.toast('No stock left. Request units first.',1);return}
+   U.modal('Complete install: '+j.plate,[{n:'dev',l:'Tracker fitted',t:'select',o:s.map(d=>[d.id,d.imei+' · '+d.model])}],f=>{B.mut(S=>{const d=S.devices.find(x=>x.id==f.dev),jb=S.jobs.find(x=>x.id==id);Object.assign(d,{owner:jb.owner,plate:jb.plate,vehicle:jb.vehicle,status:'idle',lat:jb.lat,lng:jb.lng,seen:Date.now()});jb.status='done';jb.imei=d.imei});U.toast('Installed and linked to the customer account')},'Complete job')}
+ });
+});
+</script></body></html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Master Dashboard · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+B.page('admin','index.html','Master Dashboard',(v,u)=>{
+ B.sim();const S=B.db,cl=S.users.filter(x=>x.role==='client'),d=S.devices,live=d.filter(x=>x.owner);
+ const kb=(JSON.stringify(S).length/1024).toFixed(1),rows=['users','devices','telemetry','commands','alerts','trips','invoices','tickets'];
+ v.innerHTML='<div class="grid4">'+U.stat('Customers',cl.length,cl.filter(x=>x.status==='suspended').length+' suspended')+U.stat('Trackers',d.length,d.filter(x=>!x.owner).length+' in stock')+U.stat('Online units',live.filter(x=>x.status!=='offline').length,live.filter(x=>x.status==='offline').length+' offline')+U.stat('Open tickets',S.tickets.filter(t=>t.status==='open').length,S.tickets.filter(t=>t.priority==='critical'&&t.status!=='resolved').length+' critical')+'</div><h2>Network map</h2><canvas class="map mini"></canvas>'+
+ '<div class="grid2"><div><h2>Server sync</h2><div class="panel"><dl class="kv"><dt>Engine</dt><dd>SQL simulation v'+S.meta.v+' (localStorage)</dd><dt>Sync status</dt><dd class="ok">● In sync across tabs</dd><dt>Last write</dt><dd>'+B.ago(S.meta.written)+'</dd><dt>Payload</dt><dd>'+kb+' KB</dd><dt>Audit chain</dt><dd class="'+(B.verifyChain()?'ok':'err')+'">'+(B.verifyChain()?'● Verified':'● TAMPERED')+'</dd>'+rows.map(r=>'<dt>'+r+'</dt><dd>'+S[r].length+' rows</dd>').join('')+'</dl><div class="row end"><button class="btn danger sm" data-act="reset">Reset demo database</button></div></div></div>'+
+ '<div><h2>Latest commands</h2>'+U.table([['When',x=>B.ago(x.ts)],['Unit',x=>esc(x.plate||x.imei)],['Command',x=>U.badge(x.type)],['By',x=>esc(x.by)]],S.commands.slice(-8).reverse())+'</div></div>';
+ U.map(v.querySelector('canvas'),live.filter(x=>x.lat!=null),{});
+ U.on(v,{reset:()=>U.modal('Reset database',[{t:'note',l:'This restores all demo customers, trackers, alerts and logs. <b>All changes will be lost.</b>'}],()=>{B.reset();U.toast('Database reset')},'Reset')});
+});
+</script></body></html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alerts · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+let ft='all';
+B.page('client','alerts.html','Alerts & Notifications',(v,u)=>{
+ const a=B.alertsFor(u).filter(x=>ft==='all'||x.type===ft);
+ v.innerHTML='<div class="row between"><select id="ft" class="w200">'+['all','speed','geofence','tamper','battery','panic'].map(o=>`<option ${ft===o?'selected':''}>${o}</option>`).join('')+'</select><button class="btn ghost" data-act="all">Mark all read</button></div><div class="spacer"></div>'+
+ U.table([['Time',x=>B.dt(x.ts)],['Vehicle',x=>esc((B.find('devices',x.dev)||{}).plate||'-')],['Type',x=>U.badge(x.type)],['Severity',x=>U.badge(x.sev)],['Message',x=>(x.read?'':'<b>• </b>')+esc(x.msg)],['',x=>x.read?'':`<button class="btn sm ghost" data-act="read" data-id="${x.id}">Mark read</button>`]],a,'No alerts. All clear.');
+ v.onchange=e=>{if(e.target.id==='ft'){ft=e.target.value;B.refresh()}};
+ U.on(v,{read:id=>B.upd('alerts',id,{read:true}),all:()=>B.mut(S=>S.alerts.forEach(x=>{if(x.owner===u.id)x.read=true}))});
+});
+</script></body></html>

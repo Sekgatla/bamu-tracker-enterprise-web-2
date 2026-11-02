@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Analytics · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+B.page('admin','analytics.html','Business Intelligence',(v,u)=>{
+ const S=B.db,cl=S.users.filter(x=>x.role==='client'),live=S.devices.filter(x=>x.owner),up=live.length?(live.filter(x=>x.status!=='offline').length/live.length*100):0;
+ const km=S.trips.reduce((s,x)=>s+x.km,0),rev=cl.map(c=>[c.name,B.mine(c).length*(B.PLANS[c.plan]||0)]),mrr=rev.reduce((s,r)=>s+r[1],0);
+ const cnt=(arr,k,keys)=>keys.map(x=>arr.filter(r=>r[k]===x).length);
+ v.innerHTML='<div class="grid4">'+U.stat('Network uptime',up.toFixed(1)+'%','units reporting')+U.stat('Distance logged',km.toFixed(0)+' km','all trips')+U.stat('Monthly recurring revenue',B.money(mrr),'plans × vehicles')+U.stat('Open alerts',S.alerts.filter(a=>!a.read).length)+'</div>'+
+ '<div class="grid2"><div class="panel"><h3>Trackers by model</h3><canvas class="chart" id="c1"></canvas></div><div class="panel"><h3>Commands by type</h3><canvas class="chart" id="c2"></canvas></div><div class="panel"><h3>Monthly revenue by customer (R)</h3><canvas class="chart" id="c3"></canvas></div><div class="panel"><h3>Alerts by type</h3><canvas class="chart" id="c4"></canvas></div></div>';
+ const m=B.MODELS.map(x=>x[0]),ct=['ping','immobilise','restore','reboot'],at=['speed','geofence','tamper','battery','panic'],g=id=>v.querySelector('#'+id);
+ U.bars(g('c1'),m,cnt(S.devices,'model',m));U.bars(g('c2'),ct,cnt(S.commands,'type',ct));U.bars(g('c3'),rev.map(r=>r[0]),rev.map(r=>r[1]),x=>x.toLocaleString('en-ZA'));U.bars(g('c4'),at,cnt(S.alerts,'type',at));
+});
+</script></body></html>

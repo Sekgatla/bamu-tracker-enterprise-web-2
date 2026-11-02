@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Customers · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+B.page('admin','customers.html','Customer Management',(v,u)=>{
+ const cs=B.db.users.filter(x=>x.role==='client');
+ const form=c=>[{n:'name',l:'Full name / company',v:c&&c.name},{n:'email',l:'Email',t:'email',v:c&&c.email},{n:'phone',l:'Phone',v:c&&c.phone,p:'\\+?[0-9 ]{9,15}',m:'9-15 digits'},{n:'plan',l:'Plan',t:'select',o:Object.keys(B.PLANS).map(k=>[k,k]),v:c&&c.plan}];
+ const pw=()=>'Bamu@'+Math.floor(1000+Math.random()*9000);
+ v.innerHTML='<div class="row between"><p class="muted">'+cs.length+' tenant accounts</p><button class="btn" data-act="add">+ Provision customer</button></div><div class="spacer"></div>'+
+ U.table([['Customer',x=>`<b>${esc(x.name)}</b><br><small>${esc(x.email)}</small>`],['Phone',x=>esc(x.phone)],['Plan',x=>esc(x.plan)],['Vehicles',x=>B.mine(x).length],['Status',x=>U.badge(x.status)],['Actions',x=>`<button class="btn sm ghost" data-act="edit" data-id="${x.id}">Edit</button> <button class="btn sm ghost" data-act="tog" data-id="${x.id}">${x.status==='active'?'Suspend':'Activate'}</button> <button class="btn sm ghost" data-act="pw" data-id="${x.id}">Reset PW</button> <button class="btn sm danger" data-act="del" data-id="${x.id}">Delete</button>`]],cs,'No customers provisioned.');
+ const dup=(e,id)=>B.db.users.some(x=>x.email.toLowerCase()===e.toLowerCase()&&x.id!=id);
+ U.on(v,{
+  add:()=>U.modal('Provision customer',form(),f=>{if(dup(f.email)){U.toast('Email already registered',1);return false}const p=pw();B.add('users',{role:'client',name:f.name.trim(),email:f.email.trim(),pass:p,phone:f.phone,plan:f.plan,status:'active',card:'',notify:{email:true,sms:true},created:Date.now()});U.toast('Created. Temporary password: '+p)},'Provision'),
+  edit:id=>{const c=B.find('users',id);U.modal('Edit customer',form(c),f=>{if(dup(f.email,id)){U.toast('Email already registered',1);return false}B.upd('users',id,{name:f.name.trim(),email:f.email.trim(),phone:f.phone,plan:f.plan});U.toast('Customer updated')})},
+  tog:id=>{const c=B.find('users',id);B.upd('users',id,{status:c.status==='active'?'suspended':'active'});U.toast(c.name+(c.status==='active'?' reactivated':' suspended'))},
+  pw:id=>{const p=pw();B.upd('users',id,{pass:p});U.toast('New temporary password: '+p)},
+  del:id=>{const c=B.find('users',id);U.modal('Delete '+c.name,[{t:'note',l:'Deletes the account, invoices, alerts and tickets. Trackers return to <b>stock</b>.'}],()=>{B.mut(S=>{S.devices.forEach(d=>{if(d.owner==c.id){d.owner=null;d.status='inventory';d.plate='';d.vehicle='';d.immob=false;d.lat=d.lng=null}});['alerts','invoices','tickets'].forEach(t=>S[t]=S[t].filter(x=>x.owner!=c.id));S.users=S.users.filter(x=>x.id!=c.id)});U.toast('Customer deleted')},'Delete')}
+ });
+});
+</script></body></html>

@@ -1,0 +1,7 @@
+/* Admin control centre: isolated stylesheet, amber accent on warm light surfaces */
+:root{--accent:#d17b00;--accent-ink:#fff;--bg:#faf7f0;--bg2:#f3eee2;--panel:#fff;--panel2:#fbf3e0;--line:#e8dfca;--line2:#d4c7a8}
+body.admin .top{border-bottom:3px solid var(--accent)}
+body.admin th{color:#9a5b00}
+.login-card{border-top:4px solid var(--accent)}.login-wrap{background:linear-gradient(135deg,#fbf3e0,#faf7f0)}
+.cmdbar{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}.kv{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-size:.85rem;margin-top:.8rem}.kv dt{color:var(--muted)}.kv dd{text-align:right;font-family:var(--mono)}
+.thread{display:block;border-left:3px solid var(--accent);padding-left:.8rem;margin-top:.8rem;color:var(--text)}.thread small{display:block}

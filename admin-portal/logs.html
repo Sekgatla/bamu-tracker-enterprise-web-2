@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Command Logs · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+let ft='all';
+B.page('admin','logs.html','Command Audit Logs',(v,u)=>{
+ const c=B.db.commands.filter(x=>ft==='all'||x.type===ft).slice().reverse();
+ v.innerHTML='<div class="row between"><select id="ft" class="w200">'+['all','ping','immobilise','restore','reboot'].map(o=>`<option ${ft===o?'selected':''}>${o}</option>`).join('')+'</select><div class="row"><button class="btn ghost" data-act="verify">Verify integrity</button><button class="btn" data-act="csv">Export CSV</button></div></div><div class="spacer"></div>'+
+ U.table([['Timestamp',x=>B.dt(x.ts)],['Unit',x=>`<b>${esc(x.plate||'-')}</b><br><code>${x.imei}</code>`],['Command',x=>U.badge(x.type)],['Issued by',x=>esc(x.by)+' <small>('+x.role+')</small>'],['Status',x=>U.badge(x.status)],['Chain hash',x=>`<code>${x.prev}→${x.hash}</code>`]],c,'No commands logged.');
+ v.onchange=e=>{if(e.target.id==='ft'){ft=e.target.value;B.refresh()}};
+ U.on(v,{verify:()=>B.verifyChain()?U.toast('Audit chain verified: no tampering detected'):U.toast('Integrity failure: chain broken',1),
+  csv:()=>{const q=s=>'"'+String(s).replace(/"/g,'""')+'"',rows=[['time','plate','imei','command','by','role','status','prev','hash']].concat(c.map(x=>[new Date(x.ts).toISOString(),x.plate,x.imei,x.type,x.by,x.role,x.status,x.prev,x.hash])),b=new Blob([rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bamu-command-audit.csv';a.click();URL.revokeObjectURL(a.href)}});
+});
+</script></body></html>

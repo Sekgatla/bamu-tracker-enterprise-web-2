@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Stock · Bamu Partner Portal</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/partner-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="partner"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const pts=j=>j.map(x=>({id:x.id,plate:x.plate,lat:x.lat,lng:x.lng,status:x.status==='done'?'moving':'idle',immob:false}));
+const svc=x=>x.service.charAt(0).toUpperCase()+x.service.slice(1);
+B.page('partner','inventory.html','Tracker Stock',(v,u)=>{
+ const st=B.db.devices.filter(d=>d.partner===u.id&&!d.owner),fit=B.db.jobs.filter(x=>x.partner===u.id&&x.imei);
+ v.innerHTML='<div class="row between"><p class="muted">'+st.length+' units in stock</p><button class="btn" data-act="req">Request stock</button></div><div class="spacer"></div>'+
+ U.table([['IMEI',x=>`<code>${x.imei}</code>`],['Model',x=>esc(x.model)],['Firmware',x=>x.fw],['SIM',x=>`<small>${esc(x.sim)}</small>`]],st,'No stock on hand.')+'<h2>Fitted by your centre</h2>'+
+ U.table([['Date',x=>B.dt(x.when)],['Vehicle',x=>esc(x.plate)],['Customer',x=>esc(x.customer)],['IMEI',x=>`<code>${x.imei}</code>`]],fit,'Nothing fitted yet.');
+ U.on(v,{req:()=>U.modal('Request stock from HQ',[{n:'model',l:'Model',t:'select',o:B.MODELS.map(m=>[m[0],m[0]])},{n:'qty',l:'Quantity',t:'number',v:5}],f=>{B.add('tickets',{owner:null,name:u.name,email:u.email,type:'support',priority:'medium',subject:'Stock request: '+f.qty+' × '+f.model,msg:'Partner '+u.name+' requests '+f.qty+' × '+f.model+'.',status:'open',ts:Date.now(),dev:null,replies:[]});U.toast('Request sent to Bamu HQ')},'Send request')});
+});
+</script></body></html>

@@ -1,0 +1,7 @@
+/* Client portal & public website: logo green accent on light surfaces */
+:root{--accent:#2e8b3f;--accent-ink:#fff}
+body.client{background:radial-gradient(900px 420px at 90% -10%,rgba(109,191,63,.18),transparent),var(--bg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+.vcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.1rem;transition:.2s;box-shadow:0 2px 8px rgba(31,107,58,.05)}.vcard:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.vcard .hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem}.vcard dl{display:grid;grid-template-columns:auto 1fr;gap:.25rem .9rem;font-size:.85rem}.vcard dt{color:var(--muted)}.vcard dd{text-align:right;font-family:var(--mono)}
+.paycard{background:linear-gradient(135deg,#1f6b3a,#6dbf3f);color:#fff;border-radius:16px;padding:1.4rem;max-width:340px;font-family:var(--mono);box-shadow:var(--shadow)}.paycard b{font-size:1.2rem;letter-spacing:.15em;display:block;margin:1rem 0 .4rem}

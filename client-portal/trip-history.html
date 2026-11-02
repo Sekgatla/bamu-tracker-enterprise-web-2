@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trip History · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+let f={dev:'',days:'30'};
+B.page('client','trip-history.html','Trip History',(v,u)=>{
+ const d=B.mine(u),ids=d.map(x=>x.id),cut=f.days==='all'?0:Date.now()-f.days*864e5;
+ const t=B.db.trips.filter(x=>ids.includes(x.dev)&&(!f.dev||x.dev==f.dev)&&x.start>=cut).sort((a,b)=>b.start-a.start);
+ const km=t.reduce((s,x)=>s+x.km,0);
+ v.innerHTML='<div class="grid4">'+U.stat('Trips',t.length)+U.stat('Distance',km.toFixed(1)+' km')+U.stat('Avg trip',(t.length?km/t.length:0).toFixed(1)+' km')+U.stat('Top speed',Math.max(0,...t.map(x=>x.max))+' km/h')+'</div>'+
+ '<div class="row spaced"><select id="fd"><option value="">All vehicles</option>'+d.map(x=>`<option value="${x.id}" ${f.dev==x.id?'selected':''}>${esc(x.plate)}</option>`).join('')+'</select><select id="fr">'+[['7','Last 7 days'],['30','Last 30 days'],['all','All time']].map(o=>`<option value="${o[0]}" ${f.days===o[0]?'selected':''}>${o[1]}</option>`).join('')+'</select></div>'+
+ U.table([['Date',x=>B.dt(x.start)],['Vehicle',x=>esc(B.find('devices',x.dev).plate)],['Route',x=>esc(x.from)+' → '+esc(x.to)],['Duration',x=>Math.round((x.end-x.start)/6e4)+' min'],['Distance',x=>x.km.toFixed(1)+' km'],['Avg / Max',x=>x.avg+' / '+x.max+' km/h']],t,'No trips in this period.');
+ v.onchange=e=>{if(e.target.id==='fd')f.dev=e.target.value;if(e.target.id==='fr')f.days=e.target.value;B.refresh()};
+});
+</script></body></html>

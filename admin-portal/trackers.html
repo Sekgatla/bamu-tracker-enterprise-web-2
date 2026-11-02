@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Trackers · Bamu Control Centre</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/admin-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body class="admin"><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+const own=id=>{const o=B.find('users',id);return o?esc(o.name):'<small>Unassigned</small>'};
+B.page('admin','trackers.html','Hardware Inventory',(v,u)=>{
+ const d=B.db.devices,cs=B.db.users.filter(x=>x.role==='client');
+ const form=(x,add)=>[].concat(add?[{n:'imei',l:'IMEI (15 digits)',p:'[0-9]{15}',m:'Exactly 15 digits'},{n:'sim',l:'SIM ICCID',r:false}]:[],[{n:'model',l:'Hardware model',t:'select',o:B.MODELS.map(m=>[m[0],m[0]]),v:x&&x.model},{n:'owner',l:'Assigned customer',t:'select',o:[['','— In stock (unassigned) —']].concat(cs.map(c=>[c.id,c.name])),v:x&&x.owner},{n:'plate',l:'Number plate',r:false,v:x&&x.plate},{n:'vehicle',l:'Vehicle description',r:false,v:x&&x.vehicle}]);
+ const apply=f=>{const o=f.owner?+f.owner:null;return {model:f.model,owner:o,plate:o?f.plate.trim().toUpperCase():'',vehicle:o?f.vehicle.trim():''}};
+ const place=(p,old)=>{if(p.owner&&(!old||old.status==='inventory')){const c=B.CITIES[0];p.status='idle';p.lat=c[1];p.lng=c[2]}if(!p.owner){p.status='inventory';p.lat=p.lng=null;p.immob=false;p.speed=0}return p};
+ v.innerHTML='<div class="row between"><input id="q" placeholder="Search IMEI, plate, customer…" class="w300"><button class="btn" data-act="add">+ Register tracker</button></div><div class="spacer"></div>'+
+ U.table([['IMEI',x=>`<code>${x.imei}</code>`],['Model',x=>esc(x.model)],['SIM',x=>`<small>${esc(x.sim)}</small>`],['Firmware',x=>x.fw],['Customer',x=>own(x.owner)],['Plate',x=>esc(x.plate||'-')],['Status',x=>U.status(x)],['',x=>`<button class="btn sm ghost" data-act="edit" data-id="${x.id}">Edit</button> <button class="btn sm danger" data-act="del" data-id="${x.id}">Remove</button>`]],d,'No trackers registered.');
+ const q=v.querySelector('#q');q.oninput=()=>v.querySelectorAll('tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q.value.toLowerCase()));
+ U.on(v,{
+  add:()=>U.modal('Register tracker',form(null,1),f=>{if(B.db.devices.some(x=>x.imei===f.imei)){U.toast('IMEI already registered',1);return false}const p=place(apply(f));B.add('devices',Object.assign({imei:f.imei,sim:f.sim,heading:Math.random()*6.28,speed:0,immob:false,fw:'2.1.4',batt:100,seen:Date.now(),status:'inventory',lat:null,lng:null},p));U.toast('Tracker registered'+(p.owner?' and assigned':' to stock'))},'Register'),
+  edit:id=>{const x=B.find('devices',id);U.modal('Edit '+x.imei,form(x),f=>{B.upd('devices',id,place(apply(f),x));U.toast('Tracker updated')})},
+  del:id=>{const x=B.find('devices',id);U.modal('Remove tracker',[{t:'note',l:'Remove <b>'+x.imei+'</b> from the registry? History is deleted.'}],()=>{B.mut(S=>{S.devices=S.devices.filter(d=>d.id!=id);['alerts','trips','telemetry','commands'].forEach(t=>S[t]=S[t].filter(r=>r.dev!=id))});U.toast('Tracker removed')},'Remove')}
+ });
+});
+</script></body></html>

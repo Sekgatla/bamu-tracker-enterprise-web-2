@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+B.page('client','billing.html','Billing & Subscription',(v,u)=>{
+ const inv=B.db.invoices.filter(i=>i.owner===u.id).sort((a,b)=>b.date-a.date),due=inv.filter(i=>i.status==='due').reduce((s,i)=>s+i.amount,0);
+ v.innerHTML='<div class="grid4">'+U.stat('Plan',esc(u.plan),B.money(B.PLANS[u.plan]||0)+' per vehicle / month')+U.stat('Balance due',B.money(due),due?'payable now':'all paid')+U.stat('Vehicles',B.mine(u).length)+'</div>'+
+ '<h2>Payment method</h2><div class="paycard">BAMU PAY<b>•••• •••• •••• '+esc(u.card||'----')+'</b>'+esc(u.name)+'</div><div class="spacer"></div><button class="btn ghost" data-act="card">Update card</button><h2>Invoices</h2>'+
+ U.table([['Invoice',x=>`<code>${x.no}</code>`],['Issued',x=>B.dt(x.date).split(',')[0]],['Amount',x=>B.money(x.amount)],['Status',x=>U.badge(x.status)],['',x=>`<button class="btn sm ghost" data-act="dl" data-id="${x.id}">Download</button> `+(x.status==='due'?`<button class="btn sm" data-act="pay" data-id="${x.id}">Pay now</button>`:'')]],inv,'No invoices yet.');
+ U.on(v,{
+  pay:id=>{const i=B.find('invoices',id);U.modal('Pay '+i.no,[{t:'note',l:'Charge <b>'+B.money(i.amount)+'</b> to card ending <b>'+esc(u.card)+'</b>?'}],()=>{B.upd('invoices',id,{status:'paid',paid:Date.now()});U.toast('Payment successful')},'Pay '+B.money(i.amount))},
+  card:()=>U.modal('Update payment card',[{n:'last4',l:'Last 4 digits of new card',p:'[0-9]{4}',m:'Enter exactly 4 digits'}],f=>{B.upd('users',u.id,{card:f.last4});U.toast('Card updated')}),
+  dl:id=>{const i=B.find('invoices',id),b=new Blob(['BAMU TRACKER TAX INVOICE\n'+i.no+'\nBilled to: '+u.name+'\nIssued: '+B.dt(i.date)+'\nAmount (incl. VAT): '+B.money(i.amount)+'\nStatus: '+i.status.toUpperCase()+'\n'],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=i.no+'.txt';a.click();URL.revokeObjectURL(a.href)}
+ });
+});
+</script></body></html>

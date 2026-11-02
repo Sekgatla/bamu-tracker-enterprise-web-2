@@ -1,0 +1,4 @@
+/* Light enterprise theme drawn from the Bamu shield logo (deep green to lime) */
+:root{--bg:#f4f8f3;--bg2:#eaf2e8;--panel:#ffffff;--panel2:#eef6ec;--line:#dbe6d8;--line2:#c3d3c0;--text:#12301f;--muted:#5c7266;
+--green:#1f9d55;--amber:#d98200;--red:#d93a4a;--blue:#1a73e8;--grey:#7a8a80;--brand:#1f6b3a;--brand2:#6dbf3f;
+--accent:#2e8b3f;--accent-ink:#ffffff;--radius:14px;--font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--shadow:0 10px 30px rgba(31,107,58,.12)}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+B.page('client','index.html','Dashboard',(v,u)=>{
+ const d=B.mine(u),al=B.alertsFor(u).filter(a=>!a.read);
+ v.innerHTML='<div class="grid4">'+U.stat('Vehicles',d.length,'on your account')+U.stat('Moving',d.filter(x=>x.status==='moving'&&!x.immob).length,'right now')+U.stat('Offline',d.filter(x=>x.status==='offline').length,'no signal')+U.stat('Unread alerts',al.length,'need attention')+'</div><h2>Live map</h2><canvas class="map mini"></canvas>'+
+ '<div class="row end"><button class="btn ghost" data-act="support">Support request</button><button class="btn danger" data-act="panic">Report stolen / panic</button></div><h2>Fleet overview</h2>'+
+ (d.length?'<div class="cards">'+d.map(x=>`<div class="vcard"><div class="hd"><div><b>${esc(x.plate)}</b><br><small>${esc(x.vehicle)}</small></div>${U.status(x)}</div><dl><dt>Speed</dt><dd>${Math.round(x.speed)} km/h</dd><dt>Position</dt><dd>${x.lat==null?'-':x.lat.toFixed(4)+', '+x.lng.toFixed(4)}</dd><dt>Battery</dt><dd>${x.batt}%</dd><dt>Last seen</dt><dd>${B.ago(x.seen)}</dd></dl></div>`).join('')+'</div>':'<p class="empty">No vehicles are assigned to your account yet. Your installer will link trackers shortly.</p>');
+ B.sim();U.map(v.querySelector('canvas'),d,{});
+ U.on(v,{
+  panic:()=>d.length?U.modal('Report vehicle stolen / panic',[{n:'dev',l:'Vehicle',t:'select',o:d.map(x=>[x.id,x.plate+' - '+x.vehicle])},{n:'msg',l:'What happened?',t:'textarea'}],f=>{const x=B.find('devices',f.dev);B.alert(x,'panic','Panic / stolen report submitted by owner');B.add('tickets',{owner:u.id,name:u.name,email:u.email,type:'recovery',priority:'critical',subject:'STOLEN: '+x.plate,msg:f.msg,status:'open',ts:Date.now(),dev:x.id,replies:[]});U.toast('Recovery team notified. Stay safe.')},'Alert control room'):U.toast('No vehicles to report',1),
+  support:()=>U.modal('Support request',[{n:'subject',l:'Subject'},{n:'msg',l:'Message',t:'textarea'}],f=>{B.add('tickets',{owner:u.id,name:u.name,email:u.email,type:'support',priority:'medium',subject:f.subject,msg:f.msg,status:'open',ts:Date.now(),dev:null,replies:[]});U.toast('Ticket submitted')},'Submit')
+ });
+});
+</script></body></html>

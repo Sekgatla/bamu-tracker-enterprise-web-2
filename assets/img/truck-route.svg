@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360"><rect width="480" height="360" rx="24" fill="#eef5ee"/>
+<g stroke="#d6e4d3" stroke-width="1"><path d="M0 60H480M0 120H480M0 180H480M0 240H480M0 300H480M80 0V360M160 0V360M240 0V360M320 0V360M400 0V360"/></g>
+<path d="M50 290C120 230 140 130 220 140S330 230 420 70" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/><path d="M50 290C120 230 140 130 220 140S330 230 420 70" fill="none" stroke="#3c9a3f" stroke-width="5" stroke-dasharray="4 12" stroke-linecap="round"/>
+<g fill="#1f6b3a"><circle cx="50" cy="290" r="11"/><circle cx="220" cy="140" r="11"/><circle cx="420" cy="70" r="11"/></g>
+<g transform="translate(150 215)"><rect width="110" height="58" rx="6" fill="#1f6b3a"/><path d="M110 14h30l22 24v20h-52z" fill="#6dbf3f"/><circle cx="30" cy="62" r="13" fill="#12301f"/><circle cx="128" cy="62" r="13" fill="#12301f"/></g>
+<rect x="290" y="250" width="160" height="78" rx="14" fill="#fff" stroke="#dbe6d8"/><text x="306" y="280" font-family="sans-serif" font-size="13" font-weight="700" fill="#12301f">Fleet today</text><text x="306" y="304" font-family="sans-serif" font-size="12" fill="#5c7266">42 active · 3 alerts</text></svg>

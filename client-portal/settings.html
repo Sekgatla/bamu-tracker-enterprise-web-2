@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings · Bamu Tracker</title><link rel="icon" href="../public/favicon.ico">
+<link rel="stylesheet" href="../assets/css/variables.css"><link rel="stylesheet" href="../assets/css/global.css"><link rel="stylesheet" href="../assets/css/client-style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="../assets/js/db-mock.js"></script></head>
+<body><div id="app"></div>
+<script>
+const B=Bamu,U=B.ui,esc=B.esc;
+B.page('client','settings.html','Account Settings',(v,u)=>{
+ v.innerHTML=`<div class="grid2"><form class="panel" id="pf"><h3>Profile</h3><label>Name<input name="name" value="${esc(u.name)}" required></label><label>Email<input value="${esc(u.email)}" disabled></label><label>Mobile (alerts)<input name="phone" value="${esc(u.phone)}" pattern="\\+?[0-9 ]{9,15}" required></label><button class="btn block">Save profile</button></form>
+ <form class="panel" id="pw"><h3>Security</h3><label>Current password<input name="cur" type="password" required autocomplete="current-password"></label><label>New password (min 8 chars)<input name="nw" type="password" minlength="8" required autocomplete="new-password"></label><p class="err" id="pe"></p><button class="btn block">Change password</button></form>
+ <form class="panel" id="nf"><h3>Notifications</h3><label class="check"><input type="checkbox" name="email" ${u.notify.email?'checked':''}>Email alerts</label><label class="check"><input type="checkbox" name="sms" ${u.notify.sms?'checked':''}>SMS alerts</label><button class="btn block">Save preferences</button></form></div>`;
+ v.onsubmit=e=>{e.preventDefault();const f=e.target,x=Object.fromEntries(new FormData(f));
+  if(f.id==='pf'){B.upd('users',u.id,{name:x.name.trim(),phone:x.phone});U.toast('Profile saved')}
+  if(f.id==='nf'){B.upd('users',u.id,{notify:{email:!!x.email,sms:!!x.sms}});U.toast('Preferences saved')}
+  if(f.id==='pw'){if(x.cur!==u.pass){document.getElementById('pe').textContent='Current password is incorrect.';return}B.upd('users',u.id,{pass:x.nw});U.toast('Password changed')}};
+});
+</script></body></html>
