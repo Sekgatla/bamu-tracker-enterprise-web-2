@@ -157,12 +157,12 @@
       var f = m.querySelector('input,select,textarea'); if (f) f.focus();
     },
     map: function (cv, units, o) {
-      o = o || {}; if (!w.L) return ui.mapCanvas(cv, units, o);
+      o = o || {}; if (!w.L) { cv.classList.add('map-unavailable'); cv.setAttribute('role', 'status'); cv.textContent = 'The live map library did not load. Refresh the page or check your connection.'; return; }
       var M = w.__bamuLmap;
       if (!M) {
         var el = document.createElement('div'); el.className = 'map';
         var map = L.map(el, { zoomControl: true }).setView([-26.05, 28.15], 9);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
         M = w.__bamuLmap = { el: el, map: map, mk: {}, tr: {}, fit: false, sel: null, o: {} };
       }
       M.o = o; M.el.classList.toggle('mini', cv.classList.contains('mini')); cv.replaceWith(M.el);

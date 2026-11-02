@@ -116,3 +116,5 @@ header.site{box-shadow:0 1px 0 var(--line),0 8px 30px rgba(31,107,58,.06)}
 .login-split{display:grid;grid-template-columns:1.1fr .9fr;min-height:100vh}.login-art{background:radial-gradient(900px 600px at 70% 20%,rgba(109,191,63,.3),transparent 60%),linear-gradient(160deg,#04120a,#0b2f1e 60%,#0f4a2c);display:grid;place-items:center;padding:2rem;color:#fff}
 .login-art h2{color:#fff;font-size:2rem;margin:1rem 0 .4rem}.login-art p{color:#b9d3c1;max-width:420px}.login-art>div{width:100%;max-width:560px}
 @media(max-width:860px){.login-split{grid-template-columns:1fr}.login-art{display:none}}
+
+.map.map-unavailable{display:grid;place-items:center;padding:2rem;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line2);border-radius:var(--radius)}
